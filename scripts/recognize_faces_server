@@ -17,7 +17,7 @@ def handle_recognize_faces(req):
     
     face_encodings_file = rospy.get_param("face_encodings_location")
     
-    data = pickle.loads(open(face_encodings_file, "rb").read())
+    X, y = pickle.loads(open(face_encodings_file, "rb").read())
 
     print("Detecting faces in image: " + req.image_path)
 
@@ -25,16 +25,18 @@ def handle_recognize_faces(req):
     if not boxes:
         return RecognizeFacesResponse(name)
     encoding = face_recognition.face_encodings(rgb, boxes)[0]
-    matches = face_recognition.compare_faces(data["encodings"], encoding)
+    matches = face_recognition.compare_faces(X, encoding)
     if True in matches:
         matchedIdxs = [i for (i, b) in enumerate(matches) if b]
         counts = {}
 
         for i in matchedIdxs:
-            name = data["names"][i]
+            name = y[i]
             counts[name] = counts.get(name, 0) + 1
 
         name = max(counts, key=counts.get)
+        print(name)
+        print(type(name))
 
     return RecognizeFacesResponse(name)
 

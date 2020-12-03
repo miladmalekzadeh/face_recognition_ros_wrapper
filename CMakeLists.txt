@@ -60,6 +60,7 @@ add_service_files(
   FILES
   RecognizeFaces.srv
   RegisterNewFace.srv
+  RecognizeFaces2.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -73,6 +74,7 @@ add_service_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+  sensor_msgs
 )
 
 ################################################
@@ -166,6 +168,8 @@ include_directories(
    scripts/recognize_faces_client
    scripts/add_new_face_server
    scripts/add_new_face_client
+   scripts/recognize_faces_server_2
+   scripts/recognize_faces_client_2
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

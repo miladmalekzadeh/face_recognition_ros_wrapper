@@ -19,15 +19,15 @@ class face_recognizer:
             Image, 
             self.recognize_faces_callback)
 
-        self.encodings_data = self.init_encodings_dict()
+        self.X, self.y = self.init_encodings_dict()
 
         self.bridge = CvBridge()
 
     def init_encodings_dict(self):
         face_encodings_file = rospy.get_param("face_encodings_location")    
-        encodings_data = pickle.loads(open(face_encodings_file, "rb").read())
+        X, y = pickle.loads(open(face_encodings_file, "rb").read())
 
-        return encodings_data
+        return X, y
 
     def recognize_faces_callback(self, data):
         cv_image = self.convert_image(data)
@@ -49,13 +49,13 @@ class face_recognizer:
         else:
             encoding = face_recognition.face_encodings(cv_image, boxes)[0]
     
-        matches = face_recognition.compare_faces(self.encodings_data["encodings"], encoding)
+        matches = face_recognition.compare_faces(self.X, encoding)
         if True in matches:
             matchedIdxs = [i for (i, b) in enumerate(matches) if b]
             counts = {}
 
             for i in matchedIdxs:
-                name = self.encodings_data["names"][i]
+                name = self.y[i]
                 counts[name] = counts.get(name, 0) + 1
 
             name = max(counts, key=counts.get)

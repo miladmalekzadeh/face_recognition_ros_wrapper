@@ -1,0 +1,67 @@
+#!/usr/bin/env python
+
+from face_recognition_ros_wrapper.srv import RecognizeFaces2, RecognizeFaces2Response
+import rospy
+import cv2
+import face_recognition
+import pickle
+
+import inspect
+import os
+from cv_bridge import CvBridge, CvBridgeError
+
+def handle_recognize_faces(req):
+    name = "Unknown" 
+    names = []
+    #image = cv2.imread(req.image_path)
+    try:
+        image = CvBridge().imgmsg_to_cv2(req.image, "bgr8")
+    except CvBridgeError as e:
+        print(e)
+    # cv2.imshow('image_server',image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    # rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    rgb = image
+    
+    # cv2.imshow('image_rgb',rgb)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+
+    face_encodings_file = rospy.get_param("face_encodings_location")
+    
+    X, y = pickle.loads(open(face_encodings_file, "rb").read())
+    
+    #print("Detecting faces in image: " + req.image_path)
+
+    boxes = face_recognition.face_locations(rgb, model='hog')
+    if not boxes:
+        return RecognizeFaces2Response(name)
+    
+    # detect all of the faces' encodings
+    encodings = face_recognition.face_encodings(rgb, boxes)
+    # go through all of the faces
+    for encoding in encodings:
+        matches = face_recognition.compare_faces(X, encoding)
+        if True in matches:
+            matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+            counts = {}
+            for i in matchedIdxs:
+                name = y[i]
+                counts[name] = counts.get(name, 0) + 1        
+            name = max(counts, key=counts.get)
+        names.append(name)
+    print(names)
+    
+    return RecognizeFaces2Response(names)
+
+def recognize_faces_server_2():
+    rospy.init_node("recognize_faces_server_2")
+    s = rospy.Service('recognize_faces2', RecognizeFaces2, handle_recognize_faces)
+    print("Ready to recognize faces")
+    rospy.spin()
+
+
+if __name__ == "__main__":
+    recognize_faces_server_2()

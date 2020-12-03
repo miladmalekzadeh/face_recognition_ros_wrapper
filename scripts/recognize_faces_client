@@ -9,6 +9,8 @@ def recognize_faces_client(image_path):
     try:
         recognize_faces = rospy.ServiceProxy('recognize_faces', RecognizeFaces)
         resp1 = recognize_faces(image_path)
+        print(resp1.recognized_person)
+        print(type(resp1.recognized_person))
         return resp1.recognized_person
     except rospy.ServiceException as e:
         print("Service call failed: " + str(e))

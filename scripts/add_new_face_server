@@ -17,8 +17,8 @@ def handle_register_new_face(req):
     face_encodings_file = rospy.get_param("face_encodings_location")
 
     data = defaultdict(list, pickle.loads(open(face_encodings_file, "rb").read()))
-    known_names = data["names"]
-    known_encodings = data["encodings"]
+    known_names = y #data["names"]
+    known_encodings = X #data["encodings"]
 
     print("Registering new face from given image: " + req.image_path + "\nwith name: " + req.person_name)
 
@@ -26,11 +26,12 @@ def handle_register_new_face(req):
         boxes = face_recognition.face_locations(rgb, model='hog')
         encoding = face_recognition.face_encodings(rgb, boxes)[0]
             
-        known_names.append(req.person_name)
-        known_encodings.append(encoding)
+        y.append(req.person_name)
+        X.append(encoding)
             
         f = open(face_encodings_file, "wb") 
-        f.write(pickle.dumps(dict(data)))
+        #f.write(pickle.dumps(dict(data)))
+        f.write(pickle.dumps([X, y], protocol=2))
         f.close()
 
         success = True
