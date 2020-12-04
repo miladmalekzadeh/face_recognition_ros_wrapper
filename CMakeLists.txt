@@ -60,7 +60,7 @@ add_service_files(
   FILES
   RecognizeFaces.srv
   RegisterNewFace.srv
-  RecognizeFaces2.srv
+  RecognizeFacesImage.srv
 )
 
 ## Generate actions in the 'action' folder
@@ -168,8 +168,10 @@ include_directories(
    scripts/recognize_faces_client
    scripts/add_new_face_server
    scripts/add_new_face_client
-   scripts/recognize_faces_server_2
-   scripts/recognize_faces_client_2
+   scripts/recognize_faces_server_image
+   scripts/recognize_faces_client_image
+   scripts/recognize_faces_client_topic
+   scripts/recognize_faces_client_topic
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
  )
 

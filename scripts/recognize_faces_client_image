@@ -8,10 +8,10 @@ from cv_bridge import CvBridge, CvBridgeError
 from face_recognition_ros_wrapper.srv import *
 
 def recognize_faces_client(image):
-    rospy.wait_for_service('recognize_faces2')
+    rospy.wait_for_service('recognize_faces_image')
     try:
-        recognize_faces2 = rospy.ServiceProxy('recognize_faces2', RecognizeFaces2)
-        resp1 = recognize_faces2(image)
+        recognize_faces_image = rospy.ServiceProxy('recognize_faces_image', RecognizeFacesImage)
+        resp1 = recognize_faces_image(image)
         return resp1.recognized_person
     except rospy.ServiceException as e:
         print("Service call failed: " + str(e))

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from face_recognition_ros_wrapper.srv import RecognizeFaces2, RecognizeFaces2Response
+from face_recognition_ros_wrapper.srv import RecognizeFacesImage, RecognizeFacesImageResponse
 import rospy
 import cv2
 import face_recognition
@@ -9,13 +9,18 @@ import pickle
 import inspect
 import os
 from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import *
+
 
 def handle_recognize_faces(req):
+    
+    camera_image = rospy.wait_for_message("/webcam/image_raw", Image)
+
     name = "Unknown" 
     names = []
     #image = cv2.imread(req.image_path)
     try:
-        image = CvBridge().imgmsg_to_cv2(req.image, "bgr8")
+        image = CvBridge().imgmsg_to_cv2(camera_image, "bgr8")
     except CvBridgeError as e:
         print(e)
     # cv2.imshow('image_server',image)
@@ -37,7 +42,7 @@ def handle_recognize_faces(req):
 
     boxes = face_recognition.face_locations(rgb, model='hog')
     if not boxes:
-        return RecognizeFaces2Response(name)
+        return RecognizeFacesImageResponse(name)
     
     # detect all of the faces' encodings
     encodings = face_recognition.face_encodings(rgb, boxes)
@@ -54,14 +59,23 @@ def handle_recognize_faces(req):
         names.append(name)
     print(names)
     
-    return RecognizeFaces2Response(names)
+    return RecognizeFacesImageResponse(names)
 
-def recognize_faces_server_2():
-    rospy.init_node("recognize_faces_server_2")
-    s = rospy.Service('recognize_faces2', RecognizeFaces2, handle_recognize_faces)
+def recognize_faces_server_image():
+    rospy.init_node("recognize_faces_server_image")
+    s = rospy.Service('recognize_faces_image', RecognizeFacesImage, handle_recognize_faces)
     print("Ready to recognize faces")
     rospy.spin()
 
 
 if __name__ == "__main__":
-    recognize_faces_server_2()
+    recognize_faces_server_image()
+
+
+
+# def main(argv):
+#     rospy.init_node('object_detection_server')
+#     ObjectDetectionServer()
+
+# if __name__ == '__main__':
+#     main(sys.argv)
