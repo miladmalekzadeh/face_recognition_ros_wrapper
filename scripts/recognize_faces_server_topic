@@ -9,11 +9,14 @@ import pickle
 import inspect
 import os
 from cv_bridge import CvBridge, CvBridgeError
-from sensor_msgs.msg import *
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
 
 
 def handle_recognize_faces(req):
     
+    pub_recognized_faces = rospy.Publisher('/recognized_faces', String, queue_size=10)
+
     camera_image = rospy.wait_for_message("/webcam/image_raw", Image)
 
     name = "Unknown" 
@@ -58,6 +61,8 @@ def handle_recognize_faces(req):
             name = max(counts, key=counts.get)
         names.append(name)
     print(names)
+    if name is not None:
+        pub_recognized_faces.publish(name)
     
     return RecognizeFacesImageResponse(names)
 
