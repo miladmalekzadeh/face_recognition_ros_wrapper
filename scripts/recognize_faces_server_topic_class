@@ -1,0 +1,89 @@
+#!/usr/bin/env python
+
+from face_recognition_ros_wrapper.srv import RecognizeFacesImage, RecognizeFacesImageResponse
+import rospy
+import cv2
+import face_recognition
+import pickle
+import sys
+import inspect
+import os
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
+from std_msgs.msg import String
+
+
+class face_recognizer(object):
+    def __init__(self):
+        self.names = 'unknown'
+
+        self.pub_recognized_faces = rospy.Publisher('/recognized_faces', String, queue_size=10)
+
+        self.facerecognizer = rospy.Service('recognize_faces_image', RecognizeFacesImage, self.handle_recognize_faces)
+              
+        face_encodings_file = rospy.get_param("face_encodings_location")
+        
+        self.X, self.y = pickle.loads(open(face_encodings_file, "rb").read())
+
+    def handle_recognize_faces(self, req):
+        
+        camera_image = rospy.wait_for_message("/webcam/image_raw", Image) #  /base_camera_1/color/image_raw
+
+        names = self.recognizer(camera_image)
+        # print('names_handle: ', names)
+        
+        #if names is not None:
+            #self.pub_recognized_faces.publish(names)
+        
+        return RecognizeFacesImageResponse(names)
+
+
+    # def image1Callback()
+
+    #     if param_ == True:
+
+    # def image2Callback()
+
+    def recognizer(self, camera_image):
+        name = "unknown" 
+        names = []
+        try:
+            image = CvBridge().imgmsg_to_cv2(camera_image, "bgr8")
+        except CvBridgeError as e:
+            print(e)
+              
+        boxes = face_recognition.face_locations(image, model='hog')
+        if not boxes:
+            self.pub_recognized_faces.publish('noface')
+            #return RecognizeFacesImageResponse(name)
+        
+        # detect all of the faces' encodings
+        encodings = face_recognition.face_encodings(image, boxes)
+        # go through all of the faces
+        for encoding in encodings:
+            matches = face_recognition.compare_faces(self.X, encoding)
+            if True in matches:
+                matchedIdxs = [i for (i, b) in enumerate(matches) if b]
+                counts = {}
+                for i in matchedIdxs:
+                    name = self.y[i]
+                    counts[name] = counts.get(name, 0) + 1        
+                name = max(counts, key=counts.get)
+                self.pub_recognized_faces.publish(name)
+            names.append(name)
+        # print('names: ', names)
+        # print('name: ', name)
+
+        return name
+
+        
+
+
+def main(args):
+    rospy.init_node("recognize_faces_image")
+    face_recognizer()
+    print("Ready to recognize faces")
+    rospy.spin()
+
+if __name__ == "__main__":
+    main(sys.argv)

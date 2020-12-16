@@ -17,7 +17,7 @@ def handle_recognize_faces(req):
     
     pub_recognized_faces = rospy.Publisher('/recognized_faces', String, queue_size=10)
 
-    camera_image = rospy.wait_for_message("/webcam/image_raw", Image)
+    camera_image = rospy.wait_for_message("/webcam/image_raw", Image) #  /base_camera_1/color/image_raw
 
     name = "Unknown" 
     names = []
@@ -76,11 +76,3 @@ def recognize_faces_server_image():
 if __name__ == "__main__":
     recognize_faces_server_image()
 
-
-
-# def main(argv):
-#     rospy.init_node('object_detection_server')
-#     ObjectDetectionServer()
-
-# if __name__ == '__main__':
-#     main(sys.argv)
