@@ -70,10 +70,8 @@ class face_recognizer(object):
                     counts[name] = counts.get(name, 0) + 1        
                 name = max(counts, key=counts.get)
                 self.pub_recognized_faces.publish(name)
-                print('if')
             else:
                 self.pub_recognized_faces.publish(name)
-                print('else')
             names.append(name)
             
         # print('names: ', names)
